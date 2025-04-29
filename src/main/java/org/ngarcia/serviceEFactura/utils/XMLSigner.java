@@ -20,7 +20,9 @@ public class XMLSigner {
         Security.addProvider(new BouncyCastleProvider()); // Registra Bouncy Castle
     }
 
-    public static String signXML(String unsignedXML, InputStream keystoreStream, String keystorePass) throws Exception {
+    //public static String signXML(String unsignedXML, InputStream keystoreStream, String keystorePass) throws Exception {
+    public static String signXML(String unsignedXML, KeyStore ks, String keystorePass) throws Exception {
+
         // Configuración inicial de Apache Santuario
         org.apache.xml.security.Init.init();
 
@@ -30,13 +32,13 @@ public class XMLSigner {
         Document doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(unsignedXML.getBytes()));
 
         // 2. Cargar certificado y clave privada
-        KeyStore ks = KeyStore.getInstance("PKCS12");
+        //KeyStore ks = KeyStore.getInstance("PKCS12");
 
-        try {
-            ks.load(keystoreStream, keystorePass.toCharArray());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());;
-        }
+        //try {
+            //ks.load(keystoreStream, keystorePass.toCharArray());
+        //} catch (Exception e) {
+        //    System.out.println(e.getMessage());;
+        //}
         PrivateKey privateKey = (PrivateKey) ks.getKey(ks.aliases().nextElement(), keystorePass.toCharArray());
         X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
 

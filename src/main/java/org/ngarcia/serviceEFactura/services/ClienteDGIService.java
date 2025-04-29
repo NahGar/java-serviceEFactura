@@ -8,8 +8,12 @@ public class ClienteDGIService {
    public static String enviarCFE(String signedXML) {
       try {
          // Configuración SSL (ya no es static)
-         System.setProperty("javax.net.ssl.keyStore", "src/main/resources/certprueba-1234.pfx");
-         System.setProperty("javax.net.ssl.keyStorePassword", "1234");
+         //System.setProperty("javax.net.ssl.keyStore", "src/main/resources/certprueba-1234.pfx");
+         //System.setProperty("javax.net.ssl.keyStorePassword", "1234");
+
+         //System.setProperty("javax.net.ssl.trustStore", "src/main/resources/certprueba-1234.pfx");
+         //System.setProperty("javax.net.ssl.trustStorePassword", "1234");
+         //System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
 
          WSEFactura servicio = new WSEFactura();
          WSEFacturaSoapPort port = servicio.getWSEFacturaSoapPort();
@@ -25,10 +29,14 @@ public class ClienteDGIService {
          data.setXmlData(signedXML);
          request.setDatain(data);
 
+         System.out.println("INVOCA");
          // Invocar servicio
          WSEFacturaEFACRECEPCIONSOBREResponse response = port.efacrecepcionsobre(request);
+         System.out.println("RESPONSE "+response.getDataout().getXmlData());
          return response.getDataout().getXmlData();
+
       } catch (Exception e) {
+         System.out.println("ERROR:"+e.getMessage());
          throw new RuntimeException("Error al enviar CFE a la DGI: " + e.getMessage(), e);
       }
    }
