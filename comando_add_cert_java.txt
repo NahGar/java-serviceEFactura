@@ -1,0 +1,9 @@
+keytool -import -trustcacerts -alias dgi-test-cert ^
+ -file D:\Desarrollo\Personal\Java\serviceEFactura\RUC219999830019_Prueba_CEDE_2016_2017.pem ^
+ -keystore "D:\Desarrollo\Personal\Java\jdk-22.0.2\lib\security\cacerts" ^
+ -storepass changeit
+
+keytool -import -trustcacerts -alias correo-uruguayo-root-ca ^
+ -file "D:\Desarrollo\Personal\Java\serviceEFactura\CorreoUruguayoRootCA.crt" ^
+ -keystore "D:\Desarrollo\Personal\Java\jdk-22.0.2\lib\security\cacerts" ^
+ -storepass changeit
