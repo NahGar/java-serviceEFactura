@@ -7,14 +7,6 @@ public class ClienteDGIService {
 
    public static String enviarCFE(String signedXML) {
       try {
-         // Configuración SSL (ya no es static)
-         //System.setProperty("javax.net.ssl.keyStore", "src/main/resources/certprueba-1234.pfx");
-         //System.setProperty("javax.net.ssl.keyStorePassword", "1234");
-
-         //System.setProperty("javax.net.ssl.trustStore", "src/main/resources/certprueba-1234.pfx");
-         //System.setProperty("javax.net.ssl.trustStorePassword", "1234");
-         //System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
-
          WSEFactura servicio = new WSEFactura();
          WSEFacturaSoapPort port = servicio.getWSEFacturaSoapPort();
 

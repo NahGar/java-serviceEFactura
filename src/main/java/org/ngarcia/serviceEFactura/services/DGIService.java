@@ -6,6 +6,8 @@ import org.ngarcia.serviceEFactura.utils.XMLSigner;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.Provider;
+import java.security.Security;
 
 @ApplicationScoped
 public class DGIService {
@@ -14,15 +16,20 @@ public class DGIService {
 
     public String signAndSendToDGI(String unsignedXml) throws Exception {
 
-        System.out.println("Java Home: " + System.getProperty("java.home"));
+        System.out.println("Java version: " + System.getProperty("java.version"));
 
-        System.setProperty("javax.net.ssl.keyStore", "D:/Desarrollo/Personal/Java/serviceEFactura/src/main/resources/certprueba-1234.pfx");
+        for (Provider provider : Security.getProviders()) {
+            System.out.println(provider.getName());
+        }
+
+        //System.setProperty("javax.net.ssl.keyStore", "D:/Desarrollo/Personal/Java/serviceEFactura/src/main/resources/certprueba-1234.pfx");
+        System.setProperty("javax.net.ssl.keyStore", "D:/Java/Proyectos/servicioEFactura/src/main/resources/certprueba-1234.pfx");
         System.setProperty("javax.net.ssl.keyStorePassword", "1234");
         System.setProperty("javax.net.ssl.keyStoreType", "PKCS12");
 
-        System.setProperty("javax.net.ssl.trustStore", "D:/Desarrollo/Personal/Java/serviceEFactura/src/main/resources/certprueba-1234.pfx");
-        System.setProperty("javax.net.ssl.trustStorePassword", "1234");
-        System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
+        System.setProperty("javax.net.ssl.trustStore", "D:/Java/Proyectos/servicioEFactura/truststore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+        //System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
         System.setProperty("javax.net.debug", "ssl,handshake");
 
         // Forzar TLS 1.2 (requerido por muchos servidores modernos)
