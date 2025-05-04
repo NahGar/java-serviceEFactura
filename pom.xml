@@ -143,10 +143,10 @@
                             </wsdlFiles>
                             <packageName>uy.gub.dgi.cfe</packageName>
                             <vmArgs>
-                                <vmArg>-Djavax.net.ssl.trustStore=${project.basedir}/src/main/resources/truststore.jks</vmArg>
+                                <vmArg>-Djavax.net.ssl.trustStore=D:/Java/Proyectos/servicioEFactura/truststore.jks</vmArg>
                                 <vmArg>-Djavax.net.ssl.trustStoreType=JKS</vmArg>
                                 <vmArg>-Djavax.net.ssl.trustStorePassword=123456</vmArg>
-                                <vmArg>-Djavax.net.ssl.keyStore=${project.basedir}/src/main/resources/certprueba-1234.pfx</vmArg>
+                                <vmArg>-Djavax.net.ssl.keyStore=D:/Java/Proyectos/servicioEFactura/src/main/resources/certprueba-1234.pfx</vmArg>
                                 <vmArg>-Djavax.net.ssl.keyStoreType=PKCS12</vmArg>
                                 <vmArg>-Djavax.net.ssl.keyStorePassword=1234</vmArg>
                             </vmArgs>
