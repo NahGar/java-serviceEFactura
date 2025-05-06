@@ -93,13 +93,11 @@
             <artifactId>bcpkix-jdk18on</artifactId>
             <version>1.77</version> <!-- Versión válida -->
         </dependency>
-
         <dependency>
             <groupId>com.sun.xml.ws</groupId>
             <artifactId>jaxws-rt</artifactId>
             <version>2.3.3</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-ws-security-common</artifactId>
@@ -142,19 +140,12 @@
                                 <wsdlFile>recepcionCFE.wsdl</wsdlFile>
                             </wsdlFiles>
                             <packageName>uy.gub.dgi.cfe</packageName>
-                            <vmArgs>
-                                <vmArg>-Djavax.net.ssl.trustStore=D:/Java/Proyectos/servicioEFactura/truststore.jks</vmArg>
-                                <vmArg>-Djavax.net.ssl.trustStoreType=JKS</vmArg>
-                                <vmArg>-Djavax.net.ssl.trustStorePassword=123456</vmArg>
-                                <vmArg>-Djavax.net.ssl.keyStore=D:/Java/Proyectos/servicioEFactura/src/main/resources/certprueba-1234.pfx</vmArg>
-                                <vmArg>-Djavax.net.ssl.keyStoreType=PKCS12</vmArg>
-                                <vmArg>-Djavax.net.ssl.keyStorePassword=1234</vmArg>
-                            </vmArgs>
                             <extension>true</extension>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 </project>

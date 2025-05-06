@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.Security;
+import java.util.Enumeration;
 
 @ApplicationScoped
 public class DGIService {
@@ -16,21 +17,16 @@ public class DGIService {
 
     public String signAndSendToDGI(String unsignedXml) throws Exception {
 
-        System.out.println("Java version: " + System.getProperty("java.version"));
-
-        for (Provider provider : Security.getProviders()) {
-            System.out.println(provider.getName());
-        }
-
-        //System.setProperty("javax.net.ssl.keyStore", "D:/Desarrollo/Personal/Java/serviceEFactura/src/main/resources/certprueba-1234.pfx");
-        System.setProperty("javax.net.ssl.keyStore", "D:/Java/Proyectos/servicioEFactura/src/main/resources/certprueba-1234.pfx");
+        System.setProperty("javax.net.ssl.keyStore", "D:/Desarrollo/Personal/Java/serviceEFactura/src/main/resources/certprueba-1234.pfx");
+        //System.setProperty("javax.net.ssl.keyStore", "D:/Java/Proyectos/servicioEFactura/src/main/resources/certprueba-1234.pfx");
         System.setProperty("javax.net.ssl.keyStorePassword", "1234");
         System.setProperty("javax.net.ssl.keyStoreType", "PKCS12");
 
-        System.setProperty("javax.net.ssl.trustStore", "D:/Java/Proyectos/servicioEFactura/truststore.jks");
+        System.setProperty("javax.net.ssl.trustStore", "D:/Desarrollo/Personal/Java/serviceEFactura/truststore.jks");
+        //System.setProperty("javax.net.ssl.trustStore", "D:/Java/Proyectos/servicioEFactura/truststore.jks");
         System.setProperty("javax.net.ssl.trustStorePassword", "123456");
         //System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
-        System.setProperty("javax.net.debug", "ssl,handshake");
+        //System.setProperty("javax.net.debug", "ssl,handshake");
 
         // Forzar TLS 1.2 (requerido por muchos servidores modernos)
         System.setProperty("https.protocols", "TLSv1.2");
@@ -47,11 +43,11 @@ public class DGIService {
         ks.load(keystoreStream, KEYSTORE_PASS.toCharArray());
 
         String signedXML = XMLSigner.signXML(unsignedXml, ks, KEYSTORE_PASS);
-        System.out.println("SIGNED:"+signedXML);
+        //System.out.println("SIGNED:"+signedXML);
 
         // Cierra el stream (opcional pero recomendado)
         keystoreStream.close();
 
-        return ClienteDGIService.enviarCFE(signedXML); // Tu cliente SOAP existente
+        return ClienteDGIService.enviarCFE(signedXML, ks); // Tu cliente SOAP existente
     }
 }
