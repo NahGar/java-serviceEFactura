@@ -2,8 +2,9 @@ package org.ngarcia.serviceEFactura.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
+import jakarta.xml.soap.SOAPMessage;
 
-import javax.xml.soap.SOAPMessage;
+//import javax.xml.soap.SOAPMessage;
 import java.io.ByteArrayOutputStream;
 
 public class LogObject {

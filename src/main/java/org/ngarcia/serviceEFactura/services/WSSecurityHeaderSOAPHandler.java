@@ -4,17 +4,17 @@ import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dsig.*;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.keyinfo.*;
-import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
-import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.crypto.dsig.spec.*;
 import javax.xml.namespace.QName;
-import javax.xml.soap.*;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.*;
 import java.io.ByteArrayOutputStream;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
+import jakarta.xml.soap.*;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
+import jakarta.xml.ws.handler.soap.SOAPHandler;
 import org.ngarcia.serviceEFactura.utils.LogObject;
 import org.w3c.dom.Document;
 
@@ -84,11 +84,11 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
 
                 // Configurar SignedInfo
                 SignedInfo signedInfo = sigFactory.newSignedInfo(
-                        sigFactory.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE, null),
+                        sigFactory.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE,
+                                (C14NMethodParameterSpec) null),
                         sigFactory.newSignatureMethod(SignatureMethod.RSA_SHA1, null),
                         Collections.singletonList(ref),
-                        null,  // ID
-                        null   // Prefix
+                        null  // ID
                 );
 
                 // Configurar KeyInfo
@@ -115,9 +115,9 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
                 soapMessage.saveChanges();
 
                 // Para depuración
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                soapMessage.writeTo(out);
-                System.out.println("SOAP Message:\n" + out.toString("UTF-8"));
+                //ByteArrayOutputStream out = new ByteArrayOutputStream();
+                //soapMessage.writeTo(out);
+                //System.out.println("SOAP Message:\n" + out.toString("UTF-8"));
 
             } catch (Exception e) {
                 throw new RuntimeException("Error firmando el mensaje SOAP: " + e.getMessage(), e);

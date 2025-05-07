@@ -61,6 +61,21 @@
 
         <!-- JAX-WS (BindingProvider) -->
         <dependency>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+
+        <!-- Jakarta XML Web Services API (para WildFly 26+) -->
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+            <version>4.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Lo necesita wsimport -->
+        <dependency>
             <groupId>javax.xml.ws</groupId>
             <artifactId>jaxws-api</artifactId>
             <version>2.3.1</version>
@@ -97,6 +112,7 @@
             <groupId>com.sun.xml.ws</groupId>
             <artifactId>jaxws-rt</artifactId>
             <version>2.3.3</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.wss4j</groupId>

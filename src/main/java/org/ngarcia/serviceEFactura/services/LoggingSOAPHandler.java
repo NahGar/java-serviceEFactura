@@ -1,7 +1,11 @@
 package org.ngarcia.serviceEFactura.services;
 
-import javax.xml.ws.handler.soap.SOAPHandler;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
+//import javax.xml.ws.handler.soap.SOAPHandler;
+//import javax.xml.ws.handler.soap.SOAPMessageContext;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPHandler;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
+
 import javax.xml.namespace.QName;
 import java.util.Set;
 
@@ -26,11 +30,13 @@ public class LoggingSOAPHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     @Override
-    public void close(javax.xml.ws.handler.MessageContext context) {}
-
-    @Override
     public Set<QName> getHeaders() {
         return null;
+    }
+
+    @Override
+    public void close(MessageContext messageContext) {
+
     }
 }
 

@@ -1,53 +1,91 @@
 package org.ngarcia.serviceEFactura.services;
 
+import java.io.*;
+import java.security.*;
+import java.security.cert.X509Certificate;
+import java.util.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.ngarcia.serviceEFactura.utils.XMLSigner;
+import org.w3c.dom.*;
+import org.apache.xml.security.signature.XMLSignature;
+import org.apache.xml.security.transforms.Transforms;
+import org.xml.sax.InputSource;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.Provider;
-import java.security.Security;
-import java.util.Enumeration;
+import javax.xml.XMLConstants;
 
 @ApplicationScoped
 public class DGIService {
     private static final String KEYSTORE_PATH = "certprueba-1234.pfx";
     private static final String KEYSTORE_PASS = "1234";
 
-    public String signAndSendToDGI(String unsignedXml) throws Exception {
+    static {
+        org.apache.xml.security.Init.init();
+    }
 
-        System.setProperty("javax.net.ssl.keyStore", "D:/Desarrollo/Personal/Java/serviceEFactura/src/main/resources/certprueba-1234.pfx");
-        //System.setProperty("javax.net.ssl.keyStore", "D:/Java/Proyectos/servicioEFactura/src/main/resources/certprueba-1234.pfx");
+    public String signAndSendToDGI(String unsignedXml) throws Exception {
+        // Configuración SSL y TLS (mantener tu configuración actual)
+        System.setProperty("javax.net.ssl.keyStore", "ruta/a/tu/cert.pfx");
         System.setProperty("javax.net.ssl.keyStorePassword", "1234");
         System.setProperty("javax.net.ssl.keyStoreType", "PKCS12");
-
-        System.setProperty("javax.net.ssl.trustStore", "D:/Desarrollo/Personal/Java/serviceEFactura/truststore.jks");
-        //System.setProperty("javax.net.ssl.trustStore", "D:/Java/Proyectos/servicioEFactura/truststore.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "123456");
-        //System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
-        //System.setProperty("javax.net.debug", "ssl,handshake");
-
-        // Forzar TLS 1.2 (requerido por muchos servidores modernos)
         System.setProperty("https.protocols", "TLSv1.2");
-        System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
 
-        // Carga el certificado como InputStream desde el classpath
+        // Cargar KeyStore
         InputStream keystoreStream = getClass().getClassLoader().getResourceAsStream(KEYSTORE_PATH);
-
         if (keystoreStream == null) {
-            throw new FileNotFoundException("Certificado no encontrado en classpath: " + KEYSTORE_PATH);
+            throw new FileNotFoundException("Certificado no encontrado: " + KEYSTORE_PATH);
         }
-
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(keystoreStream, KEYSTORE_PASS.toCharArray());
-
-        String signedXML = XMLSigner.signXML(unsignedXml, ks, KEYSTORE_PASS);
-        //System.out.println("SIGNED:"+signedXML);
-
-        // Cierra el stream (opcional pero recomendado)
         keystoreStream.close();
 
-        return ClienteDGIService.enviarCFE(signedXML, ks); // Tu cliente SOAP existente
+        String alias = "";
+        Enumeration<String> aliases = ks.aliases();
+        if (aliases.hasMoreElements()) {
+            alias = aliases.nextElement();
+        }
+
+        // Obtener el certificado X.509 del KeyStore
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+
+        // Parsear XML
+        Document doc = parseXml(unsignedXml);
+
+        // Firmar cada elemento <CFE>
+        NodeList cfeNodes = doc.getElementsByTagName("CFE");
+        for (int i = 0; i < cfeNodes.getLength(); i++) {
+            Element cfe = (Element) cfeNodes.item(i);
+            SignCFE.sign(cfe, ks, cert);
+        }
+
+        // Convertir Document a String
+        String signedXml = documentToString(doc);
+        System.out.println("DOC firmado:"+signedXml);
+
+        // Enviar el XML firmado
+        return ClienteDGIService.enviarCFE(signedXml, ks);
+    }
+
+    private Document parseXml(String xml) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        return dbf.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+    }
+
+    private String documentToString(Document doc) throws TransformerException {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(doc), new StreamResult(writer));
+        return writer.toString();
     }
 }
+

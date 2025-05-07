@@ -1,8 +1,10 @@
 package org.ngarcia.serviceEFactura.services;
 
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.handler.Handler;
 import uy.gub.dgi.cfe.*;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.Handler;
+//import javax.xml.ws.BindingProvider;
+//import javax.xml.ws.handler.Handler;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -30,14 +32,7 @@ public class ClienteDGIService {
          data.setXmlData(signedXML);
          request.setDatain(data);
 
-         String alias = "";
-         Enumeration<String> aliases = ks.aliases();
-         if (aliases.hasMoreElements()) {
-            alias = aliases.nextElement();
-         }
 
-         // Obtener el certificado X.509 del KeyStore
-         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
 
          // Crear la cadena de manejadores y agregar el WS-Security Header Handler
          List<Handler> handlerChain = new ArrayList<>();
