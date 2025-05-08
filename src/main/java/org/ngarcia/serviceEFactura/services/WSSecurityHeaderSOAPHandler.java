@@ -6,7 +6,6 @@ import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.keyinfo.*;
 import javax.xml.crypto.dsig.spec.*;
 import javax.xml.namespace.QName;
-import java.io.ByteArrayOutputStream;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -16,12 +15,17 @@ import jakarta.xml.ws.handler.MessageContext;
 import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 import jakarta.xml.ws.handler.soap.SOAPHandler;
 import org.ngarcia.serviceEFactura.utils.LogObject;
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageContext> {
 
     private final X509Certificate certificate;
     private final PrivateKey privateKey;
+    private static final String WSSE_NS = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
+    private static final String WSU_NS = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
+    private static final String DS_NS = "http://www.w3.org/2000/09/xmldsig#";
 
     public WSSecurityHeaderSOAPHandler(X509Certificate certificate, PrivateKey privateKey) {
         this.certificate = certificate;
@@ -36,25 +40,42 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
                 SOAPMessage soapMessage = context.getMessage();
                 SOAPEnvelope envelope = soapMessage.getSOAPPart().getEnvelope();
 
+                // ——— 1) ENVUELVE xmlData EN CDATA ———
+                SOAPBody body = envelope.getBody();
+                // Ajusta namespace si tu xmlData viene con prefijo o en un ns
+                NodeList xmlDataList = body.getElementsByTagNameNS("http://dgi.gub.uy","xmlData");
+                if (xmlDataList.getLength() > 0) {
+                    SOAPElement xmlDataElem = (SOAPElement) xmlDataList.item(0);
+                    // 1.1 lee el XML directamente del contexto
+                    String original = (String) context.get("SIGNED_XML");
+                    // 1.2 limpia cualquier hijo
+                    while (xmlDataElem.hasChildNodes()) {
+                        xmlDataElem.removeChild(xmlDataElem.getFirstChild());
+                    }
+                    // 1.3 inserta CDATA con tu XML firmado
+                    CDATASection cdata = xmlDataElem.getOwnerDocument()
+                            .createCDATASection(original);
+                    xmlDataElem.appendChild(cdata);
+                    soapMessage.saveChanges();
+                }
+
                 // Agregar namespaces necesarios
-                envelope.addNamespaceDeclaration("wsse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd");
-                envelope.addNamespaceDeclaration("wsu", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd");
-                envelope.addNamespaceDeclaration("ds", "http://www.w3.org/2000/09/xmldsig#");
+                envelope.addNamespaceDeclaration("wsse", WSSE_NS);
+                envelope.addNamespaceDeclaration("wsu", WSU_NS);
+                envelope.addNamespaceDeclaration("ds", DS_NS);
 
                 SOAPHeader header = envelope.getHeader();
-                if (header == null) {
-                    header = envelope.addHeader();
-                }
+                if (header == null) { header = envelope.addHeader(); }
 
                 // Crear elemento Security
                 SOAPHeaderElement security = header.addHeaderElement(
-                        new QName("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd",
+                        new QName(WSSE_NS,
                                 "Security", "wsse"));
                 security.setMustUnderstand(true);
 
                 // Agregar BinarySecurityToken
                 SOAPElement binarySecurityToken = security.addChildElement(
-                        new QName("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd",
+                        new QName(WSSE_NS,
                                 "BinarySecurityToken", "wsse"));
                 binarySecurityToken.setAttribute("EncodingType",
                         "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary");
@@ -65,10 +86,7 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
                 String base64Cert = Base64.getEncoder().encodeToString(certificate.getEncoded());
                 binarySecurityToken.setTextContent(base64Cert);
 
-                // Preparar el body para la firma
-                SOAPBody body = envelope.getBody();
-                body.addAttribute(new QName("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd",
-                        "Id", "wsu"), "body");
+                body.addAttribute(new QName(WSU_NS,"Id", "wsu"), "body");
 
                 // Configurar la firma XML
                 XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
@@ -88,7 +106,7 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
                                 (C14NMethodParameterSpec) null),
                         sigFactory.newSignatureMethod(SignatureMethod.RSA_SHA1, null),
                         Collections.singletonList(ref),
-                        null  // ID
+                        "SIG-1"  // ID
                 );
 
                 // Configurar KeyInfo
@@ -96,17 +114,12 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
                 List<XMLStructure> keyInfoContent = new ArrayList<>();
 
                 // Crear SecurityTokenReference
-                KeyValue keyValue = keyInfoFactory.newKeyValue(certificate.getPublicKey());
-                KeyInfo keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(keyValue));
+                SecurityTokenReference str = new SecurityTokenReference("X509Token", envelope.getOwnerDocument());
+                KeyInfo keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(str.getElement()));
 
                 // Configurar contexto de firma
                 DOMSignContext signContext = new DOMSignContext(privateKey, envelope);
                 signContext.setDefaultNamespacePrefix("ds");
-
-                // Para manejar namespaces, asegúrate de que están declarados en el envelope
-                envelope.addNamespaceDeclaration("ds", "http://www.w3.org/2000/09/xmldsig#");
-                envelope.addNamespaceDeclaration("wsse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd");
-                envelope.addNamespaceDeclaration("wsu", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd");
 
                 // Crear y aplicar la firma
                 XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyInfo);
@@ -114,13 +127,8 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
 
                 soapMessage.saveChanges();
 
-                // Para depuración
-                //ByteArrayOutputStream out = new ByteArrayOutputStream();
-                //soapMessage.writeTo(out);
-                //System.out.println("SOAP Message:\n" + out.toString("UTF-8"));
-
             } catch (Exception e) {
-                throw new RuntimeException("Error firmando el mensaje SOAP: " + e.getMessage(), e);
+                System.out.println("Error firmando el mensaje SOAP: " + e.getMessage());
             }
         }
         return true;

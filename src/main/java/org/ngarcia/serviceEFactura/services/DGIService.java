@@ -10,8 +10,6 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.w3c.dom.*;
-import org.apache.xml.security.signature.XMLSignature;
-import org.apache.xml.security.transforms.Transforms;
 import org.xml.sax.InputSource;
 
 import javax.xml.XMLConstants;
@@ -54,18 +52,19 @@ public class DGIService {
         Document doc = parseXml(unsignedXml);
 
         // Firmar cada elemento <CFE>
-        NodeList cfeNodes = doc.getElementsByTagName("CFE");
+        String cfeNS = "http://cfe.dgi.gub.uy";
+        NodeList cfeNodes = doc.getElementsByTagNameNS(cfeNS, "CFE");
         for (int i = 0; i < cfeNodes.getLength(); i++) {
             Element cfe = (Element) cfeNodes.item(i);
-            SignCFE.sign(cfe, ks, cert);
+            SignCFE.sign(cfe, ks, cert, alias);
         }
 
         // Convertir Document a String
         String signedXml = documentToString(doc);
-        System.out.println("DOC firmado:"+signedXml);
+        //System.out.println("DOC firmado:"+signedXml);
 
         // Enviar el XML firmado
-        return ClienteDGIService.enviarCFE(signedXml, ks);
+        return ClienteDGIService.enviarCFE(signedXml, ks, alias, cert);
     }
 
     private Document parseXml(String xml) throws Exception {
