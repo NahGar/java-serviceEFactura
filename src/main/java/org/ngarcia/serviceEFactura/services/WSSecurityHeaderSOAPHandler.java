@@ -31,6 +31,7 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
         this.privateKey = privateKey;
     }
 
+    /*
     @Override
     public boolean handleMessage(SOAPMessageContext context) {
         Boolean isOutbound = (Boolean) context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
@@ -133,6 +134,75 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
         }
         return true;
     }
+    */
+
+    @Override
+    public boolean handleMessage(SOAPMessageContext context) {
+        Boolean isOutbound = (Boolean) context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+        if (isOutbound) {
+            try {
+                SOAPMessage soapMessage = context.getMessage();
+                SOAPEnvelope envelope = soapMessage.getSOAPPart().getEnvelope();
+
+                // ——— 1) ENVUELVE xmlData EN CDATA ———
+                SOAPBody body = envelope.getBody();
+                NodeList xmlDataList = body.getElementsByTagNameNS("http://dgi.gub.uy", "xmlData");
+                if (xmlDataList.getLength() > 0) {
+                    SOAPElement xmlDataElem = (SOAPElement) xmlDataList.item(0);
+                    String originalSignedXML = (String) context.get("SIGNED_XML");
+                    while (xmlDataElem.hasChildNodes()) {
+                        xmlDataElem.removeChild(xmlDataElem.getFirstChild());
+                    }
+                    CDATASection cdata = xmlDataElem.getOwnerDocument().createCDATASection(originalSignedXML);
+                    xmlDataElem.appendChild(cdata);
+                    soapMessage.saveChanges();
+                }
+
+                // ——— 2) AÑADE WS-SECURITY HEADER ———
+                // declarar namespaces
+                envelope.addNamespaceDeclaration("wsse", WSSE_NS);
+                envelope.addNamespaceDeclaration("wsu", WSU_NS);
+                envelope.addNamespaceDeclaration("ds", DS_NS);
+
+                SOAPHeader header = envelope.getHeader();
+                if (header == null) header = envelope.addHeader();
+
+                // crear el elemento <wsse:Security>
+                SOAPHeaderElement security = header.addHeaderElement(
+                        new QName(WSSE_NS, "Security", "wsse")
+                );
+
+                // quitar mustUnderstand y dirigirlo a actor “next”
+                String soapEnvNS     = envelope.getNamespaceURI();   // "http://schemas.xmlsoap.org/soap/envelope/"
+                String soapEnvPrefix = envelope.getPrefix();         // ej. "S" o "soapenv"
+                security.setAttributeNS(
+                        soapEnvNS,
+                        soapEnvPrefix + ":actor",
+                        "http://schemas.xmlsoap.org/soap/actor/next"
+                );
+
+                // crear <wsse:BinarySecurityToken>
+                SOAPElement binarySecurityToken = security.addChildElement(
+                        new QName(WSSE_NS, "BinarySecurityToken", "wsse")
+                );
+                binarySecurityToken.setAttribute("EncodingType",
+                        "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary"
+                );
+                binarySecurityToken.setAttribute("ValueType",
+                        "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3"
+                );
+                binarySecurityToken.setAttributeNS(WSU_NS, "wsu:Id", "X509-5DFA3742A71FBC99CA17475800568446");
+                binarySecurityToken.setTextContent(Base64.getEncoder().encodeToString(certificate.getEncoded()));
+
+                soapMessage.saveChanges();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
+    }
+
 
     @Override
     public Set<QName> getHeaders() {
