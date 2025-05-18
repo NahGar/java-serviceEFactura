@@ -51,6 +51,7 @@ public class ClienteDGIService {
 
       } catch (Exception e) {
          System.out.println("ERROR:" + e.getMessage());
+         e.printStackTrace();
          throw new RuntimeException("Error al enviar CFE a la DGI: " + e.getMessage(), e);
       }
    }

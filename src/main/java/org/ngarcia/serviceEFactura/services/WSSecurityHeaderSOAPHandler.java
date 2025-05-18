@@ -14,7 +14,6 @@ import jakarta.xml.soap.*;
 import jakarta.xml.ws.handler.MessageContext;
 import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 import jakarta.xml.ws.handler.soap.SOAPHandler;
-import org.ngarcia.serviceEFactura.utils.LogObject;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -71,7 +70,8 @@ public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageConte
                 SOAPHeaderElement security = header.addHeaderElement(
                         new QName(WSSE_NS,
                                 "Security", "wsse"));
-                security.setMustUnderstand(true);
+                //security.setMustUnderstand(true);
+                security.setMustUnderstand(false);
 
                 // Agregar BinarySecurityToken
                 SOAPElement binarySecurityToken = security.addChildElement(

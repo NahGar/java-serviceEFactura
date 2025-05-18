@@ -16,8 +16,11 @@ import javax.xml.XMLConstants;
 
 @ApplicationScoped
 public class DGIService {
-    private static final String KEYSTORE_PATH = "certprueba-1234.pfx";
+    private static final String KEYSTORE_NAME = "certprueba-1234.pfx";
     private static final String KEYSTORE_PASS = "1234";
+    private static final String KEYSTORE_PATH = "D:\\Java\\Proyectos\\servicioEFactura\\src\\main\\resources\\certprueba-1234.pfx";
+    private static final String TRUSTSTORE_PATH = "D:\\Java\\Proyectos\\servicioEFactura\\src\\main\\resources\\truststore.jks";
+    private static final String TRUSTSTORE_PASS = "123456";
 
     static {
         org.apache.xml.security.Init.init();
@@ -25,15 +28,19 @@ public class DGIService {
 
     public String signAndSendToDGI(String unsignedXml) throws Exception {
         // Configuración SSL y TLS (mantener tu configuración actual)
-        System.setProperty("javax.net.ssl.keyStore", "ruta/a/tu/cert.pfx");
-        System.setProperty("javax.net.ssl.keyStorePassword", "1234");
+        System.setProperty("javax.net.ssl.keyStore", KEYSTORE_PATH);
+        System.setProperty("javax.net.ssl.keyStorePassword", KEYSTORE_PASS);
         System.setProperty("javax.net.ssl.keyStoreType", "PKCS12");
         System.setProperty("https.protocols", "TLSv1.2");
 
+        System.setProperty("javax.net.ssl.trustStore",TRUSTSTORE_PATH);
+        System.setProperty("javax.net.ssl.trustStorePassword",TRUSTSTORE_PASS);
+        System.setProperty("javax.net.ssl.trustStoreType","JKS");
+
         // Cargar KeyStore
-        InputStream keystoreStream = getClass().getClassLoader().getResourceAsStream(KEYSTORE_PATH);
+        InputStream keystoreStream = getClass().getClassLoader().getResourceAsStream(KEYSTORE_NAME);
         if (keystoreStream == null) {
-            throw new FileNotFoundException("Certificado no encontrado: " + KEYSTORE_PATH);
+            throw new FileNotFoundException("Certificado no encontrado: " + KEYSTORE_NAME);
         }
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(keystoreStream, KEYSTORE_PASS.toCharArray());
