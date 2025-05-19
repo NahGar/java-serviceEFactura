@@ -46,7 +46,7 @@ public class ClienteDGIService {
          WSEFacturaEFACRECEPCIONSOBREResponse response = port.efacrecepcionsobre(request);
 
          // Procesar la respuesta
-         System.out.println("RESPONSE " + response.getDataout().getXmlData());
+         //System.out.println("RESPONSE " + response.getDataout().getXmlData());
          return response.getDataout().getXmlData();
 
       } catch (Exception e) {

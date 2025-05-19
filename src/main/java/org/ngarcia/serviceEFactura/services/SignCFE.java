@@ -9,13 +9,6 @@ import org.apache.xml.security.utils.Constants;
 import org.apache.xml.security.utils.ElementProxy;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.StringWriter;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -41,11 +34,11 @@ public class SignCFE {
 
       try {
          // 1) Generar un Id y asignarlo en el namespace WSU
-         String id = "CFE-" + UUID.randomUUID();
+         //String id = "CFE-" + UUID.randomUUID();
          // declarar namespace wsu en el propio elemento CFE
-         cfeElement.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:wsu", WSU_NS);
+         //cfeElement.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:wsu", WSU_NS);
          // poner el atributo wsu:Id
-         cfeElement.setAttributeNS(WSU_NS, "wsu:Id", id);
+         //cfeElement.setAttributeNS(WSU_NS, "wsu:Id", id);
 
          // 2) Obtener clave privada
          PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "1234".toCharArray());
@@ -103,53 +96,5 @@ public class SignCFE {
       } catch (Exception e) {
          System.out.println("Error en SingCFE: " + e.getMessage());;
       }
-
    }
-   /*
-   public static void sign(Element cfeElement, KeyStore ks, X509Certificate cert) throws Exception {
-      // Configurar atributo ID
-      String id = "CFE-" + UUID.randomUUID().toString();
-      cfeElement.setAttributeNS(null, "Id", id);
-
-      // Obtener clave privada
-      String alias = ks.aliases().nextElement();
-      String keyPassword = "1234";
-      PrivateKey privateKey = (PrivateKey) ks.getKey(alias, keyPassword.toCharArray());
-
-      // Crear contexto de firma
-      XMLSignature sig = new XMLSignature(cfeElement.getOwnerDocument(), "",
-              XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256,
-              "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
-
-      // Configurar la referencia
-      Transforms transforms = new Transforms(cfeElement.getOwnerDocument());
-      transforms.addTransform(Transforms.TRANSFORM_ENVELOPED_SIGNATURE);
-      transforms.addTransform(Transforms.TRANSFORM_C14N_WITH_COMMENTS);
-      sig.addDocument("#" + id, transforms, "http://www.w3.org/2001/04/xmlenc#sha256");
-
-      // Añadir KeyInfo
-      KeyInfo keyInfo = new KeyInfo(cfeElement.getOwnerDocument());
-      keyInfo.addKeyValue(cert.getPublicKey());
-
-      // Añadir certificado X509
-      org.apache.xml.security.keys.content.X509Data x509Data =
-              new org.apache.xml.security.keys.content.X509Data(cfeElement.getOwnerDocument());
-      x509Data.addCertificate(cert);
-      keyInfo.add(x509Data);
-
-      // Vincular KeyInfo con la firma
-      sig.getElement().appendChild(keyInfo.getElement());
-
-      // Insertar firma
-      Node firstChild = cfeElement.getFirstChild();
-      if (firstChild != null) {
-         cfeElement.insertBefore(sig.getElement(), firstChild);
-      } else {
-         cfeElement.appendChild(sig.getElement());
-      }
-
-      // Firmar
-      sig.sign(privateKey);
-   }
-    */
 }
