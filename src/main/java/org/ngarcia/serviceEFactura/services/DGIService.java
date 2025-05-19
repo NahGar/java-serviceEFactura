@@ -59,16 +59,98 @@ public class DGIService {
         Document doc = parseXml(unsignedXml);
 
         // Firmar cada elemento <CFE>
+        //String cfeNS = "http://cfe.dgi.gub.uy";
+        //NodeList cfeNodes = doc.getElementsByTagNameNS(cfeNS, "CFE");
+        //for (int i = 0; i < cfeNodes.getLength(); i++) {
+        //    Element cfe = (Element) cfeNodes.item(i);
+        //    SignCFE.sign(cfe, ks, cert, alias);
+        //}
+
         String cfeNS = "http://cfe.dgi.gub.uy";
         NodeList cfeNodes = doc.getElementsByTagNameNS(cfeNS, "CFE");
-        for (int i = 0; i < cfeNodes.getLength(); i++) {
-            Element cfe = (Element) cfeNodes.item(i);
-            SignCFE.sign(cfe, ks, cert, alias);
+        if (cfeNodes.getLength() != 1) {
+            throw new IllegalStateException("Se esperaba exactamente un <CFE>");
         }
+        Element cfe = (Element) cfeNodes.item(0);
+        SignCFE.sign(cfe, ks, cert, alias);
+
+        String rutReceptor  = "219999830019";
+        String rucEmisor    = "219999820013";
+        String idEmisor     = "3009";
+        int    cantCFE      = 1;
+        String fecha        = "2023-10-01T13:10:00-03:00";
+        byte[] der = cert.getEncoded();
+        String certB64      = Base64.getEncoder().encodeToString(der);
+
+        // 3) Crea el wrapper EnvióCFE
+        Element envio = doc.createElementNS(
+                cfeNS, "DGICFE:EnvioCFE"
+        );
+        envio.setAttribute("version", "1.0");
+        envio.setAttributeNS(
+                "http://www.w3.org/2001/XMLSchema-instance",
+                "xsi:schemaLocation",
+                "http://cfe.dgi.gub.uy EnvioCFE_v1.11.xsd"
+        );
+        envio.setAttribute("xmlns:DGICFE", cfeNS);
+        envio.setAttribute("xmlns:xsi",
+                "http://www.w3.org/2001/XMLSchema-instance"
+        );
+
+        // 4) Construye la Carátula dentro de 'envio'
+        Element car = doc.createElementNS(cfeNS, "DGICFE:Caratula");
+        car.setAttribute("version", "1.0");
+        envio.appendChild(car);
+
+        Element rutReceptorEl = doc.createElementNS(cfeNS, "DGICFE:RutReceptor");
+        rutReceptorEl.setTextContent("219999830019");
+        car.appendChild(rutReceptorEl);
+
+        Element rucEmisorEl = doc.createElementNS(cfeNS, "DGICFE:RUCEmisor");
+        rucEmisorEl.setTextContent("219999820013");
+        car.appendChild(rucEmisorEl);
+
+        Element idEmisorEl = doc.createElementNS(cfeNS, "DGICFE:Idemisor");
+        idEmisorEl.setTextContent("3009");
+        car.appendChild(idEmisorEl);
+
+        Element cantCFEEl = doc.createElementNS(cfeNS, "DGICFE:CantCFE");
+        cantCFEEl.setTextContent("1");
+        car.appendChild(cantCFEEl);
+
+        Element fechaEl = doc.createElementNS(cfeNS, "DGICFE:Fecha");
+        fechaEl.setTextContent("2023-10-01T13:10:00-03:00");
+        car.appendChild(fechaEl);
+
+        Element certEl = doc.createElementNS(cfeNS, "DGICFE:X509Certificate");
+        certEl.setTextContent(certB64);  // Aquí va tu certificado codificado en Base64
+        car.appendChild(certEl);
+        /*
+        for (Map.Entry<String,String> e : Map.of(
+                "DGICFE:RutReceptor",      rutReceptor,
+                "DGICFE:RUCEmisor",        rucEmisor,
+                "DGICFE:Idemisor",         idEmisor,
+                "DGICFE:CantCFE",          String.valueOf(cantCFE),
+                "DGICFE:Fecha",            fecha,
+                "DGICFE:X509Certificate",  certB64
+        ).entrySet()) {
+            Element el = doc.createElementNS(cfeNS, e.getKey());
+            el.setTextContent(e.getValue());
+            car.appendChild(el);
+        }*/
+
+        // 5) Mueve el <CFE> bajo tu wrapper
+        //Node parent = cfe.getParentNode();
+        //parent.replaceChild(envio, cfe);
+        //envio.appendChild(cfe);
+
+        Node parent = cfe.getParentNode();
+        parent.replaceChild(envio, cfe);
+        envio.appendChild(cfe);
 
         // Convertir Document a String
         String signedXml = documentToString(doc);
-        //System.out.println("DOC firmado:"+signedXml);
+        System.out.println("DOC firmado:"+signedXml);
 
         // Enviar el XML firmado
         return ClienteDGIService.enviarCFE(signedXml, ks, alias, cert);

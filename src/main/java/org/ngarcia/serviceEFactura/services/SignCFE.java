@@ -71,14 +71,7 @@ public class SignCFE {
          x509Data.addCertificate(cert);
          ki.add(x509Data);
 
-         // 6) Insertar el elemento <ds:Signature> como primer hijo de <CFE>
-         //Node firstChild = cfeElement.getFirstChild();
-         //if (firstChild != null) {
-         //   cfeElement.insertBefore(sig.getElement(), firstChild);
-         //} else {
-         //   cfeElement.appendChild(sig.getElement());
-         //}
-
+         // 6) Insertar el elemento <ds:Signature>
          cfeElement.appendChild(sig.getElement());
 
          // 7) Firmar
