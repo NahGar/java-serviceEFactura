@@ -1,4 +1,4 @@
-package org.ngarcia.serviceEFactura.services;
+package org.ngarcia.serviceEFactura.SOAP;
 
 // — WS-Security + SOAP (Jakarta EE) —
 import jakarta.xml.soap.*;
@@ -31,8 +31,6 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Set;
 import javax.xml.namespace.QName;
-
-import static org.bouncycastle.asn1.iana.IANAObjectIdentifiers.security;
 
 public class WSSecurityHeaderSOAPHandler implements SOAPHandler<SOAPMessageContext> {
 

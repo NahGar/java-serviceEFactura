@@ -1,4 +1,4 @@
-package org.ngarcia.serviceEFactura.services;
+package org.ngarcia.serviceEFactura.SOAP;
 
 //import javax.xml.ws.handler.soap.SOAPHandler;
 //import javax.xml.ws.handler.soap.SOAPMessageContext;

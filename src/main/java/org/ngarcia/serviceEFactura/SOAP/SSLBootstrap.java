@@ -1,4 +1,4 @@
-package org.ngarcia.serviceEFactura.services;
+package org.ngarcia.serviceEFactura.SOAP;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;

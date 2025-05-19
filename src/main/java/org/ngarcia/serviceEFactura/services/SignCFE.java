@@ -30,20 +30,17 @@ public class SignCFE {
        }
    }
 
+   //public static void complete(Element cfeElement, KeyStore ks, X509Certificate cert, String alias) {
+
+   //}
+
    public static void sign(Element cfeElement, KeyStore ks, X509Certificate cert, String alias) {
 
       try {
-         // 1) Generar un Id y asignarlo en el namespace WSU
-         //String id = "CFE-" + UUID.randomUUID();
-         // declarar namespace wsu en el propio elemento CFE
-         //cfeElement.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:wsu", WSU_NS);
-         // poner el atributo wsu:Id
-         //cfeElement.setAttributeNS(WSU_NS, "wsu:Id", id);
-
-         // 2) Obtener clave privada
+         // 1) Obtener clave privada
          PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "1234".toCharArray());
 
-         // 3) Crear el objeto XMLSignature usando SHA256 o SHA1 según tu esquema
+         // 2) Crear el objeto XMLSignature usando SHA256 o SHA1 según tu esquema
          //    Si quieres SHA1 (como el ejemplo), usa ALGO_ID_SIGNATURE_RSA_SHA1
          String signatureAlgo = XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256;
          // String signatureAlgo = XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1;
@@ -53,15 +50,15 @@ public class SignCFE {
                  signatureAlgo
          );
 
-         // 4) Transforms: primero enveloped, luego c14n (con o sin comentarios)
+         // 3) Transforms: primero enveloped, luego c14n (con o sin comentarios)
          Transforms transforms = new Transforms(cfeElement.getOwnerDocument());
          transforms.addTransform(Transforms.TRANSFORM_ENVELOPED_SIGNATURE);
          transforms.addTransform(Transforms.TRANSFORM_C14N_WITH_COMMENTS);
 
-         // 5) Añadir la referencia con URI vacío
+         // 4) Añadir la referencia con URI vacío
          sig.addDocument("", transforms, "http://www.w3.org/2001/04/xmlenc#sha256");
 
-         // 6) Construir KeyInfo con certificado
+         // 5) Construir KeyInfo con certificado
          KeyInfo ki = sig.getKeyInfo();
          if (ki == null) {
             ki = new KeyInfo(cfeElement.getOwnerDocument());
@@ -74,15 +71,17 @@ public class SignCFE {
          x509Data.addCertificate(cert);
          ki.add(x509Data);
 
-         // 7) Insertar el elemento <ds:Signature> como primer hijo de <CFE>
-         Node firstChild = cfeElement.getFirstChild();
-         if (firstChild != null) {
-            cfeElement.insertBefore(sig.getElement(), firstChild);
-         } else {
-            cfeElement.appendChild(sig.getElement());
-         }
+         // 6) Insertar el elemento <ds:Signature> como primer hijo de <CFE>
+         //Node firstChild = cfeElement.getFirstChild();
+         //if (firstChild != null) {
+         //   cfeElement.insertBefore(sig.getElement(), firstChild);
+         //} else {
+         //   cfeElement.appendChild(sig.getElement());
+         //}
 
-         // 8) Firmar
+         cfeElement.appendChild(sig.getElement());
+
+         // 7) Firmar
          sig.sign(privateKey);
 
          // --- depuración: imprimir la firma en consola ---

@@ -2,6 +2,8 @@ package org.ngarcia.serviceEFactura.services;
 
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.handler.Handler;
+import org.ngarcia.serviceEFactura.SOAP.LoggingSOAPHandler;
+import org.ngarcia.serviceEFactura.SOAP.WSSecurityHeaderSOAPHandler;
 import uy.gub.dgi.cfe.*;
 import java.security.KeyStore;
 import java.security.PrivateKey;
