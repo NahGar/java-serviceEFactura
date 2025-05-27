@@ -8,11 +8,9 @@ import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.Constants;
 import org.apache.xml.security.utils.ElementProxy;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.UUID;
 
 public class SignCFE {
 
@@ -29,10 +27,6 @@ public class SignCFE {
            e.printStackTrace();
        }
    }
-
-   //public static void complete(Element cfeElement, KeyStore ks, X509Certificate cert, String alias) {
-
-   //}
 
    public static void sign(Element cfeElement, KeyStore ks, X509Certificate cert, String alias) {
 

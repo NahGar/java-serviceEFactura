@@ -3,14 +3,12 @@ package org.ngarcia.serviceEFactura.services;
 import java.io.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
 import java.util.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.ngarcia.serviceEFactura.utils.Varios;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 

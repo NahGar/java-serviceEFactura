@@ -9,7 +9,7 @@ import javax.net.ssl.SSLContext;
 @Startup
 @Singleton
 @Priority(1)
-public class SSLBootstrap {
+public class MySSLBootstrap { //cambié el nombre (SSLBootstrap) porque daba error por duplicidad
    @PostConstruct
    public void initDefaultSSLContext() {
       try {

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<Context path="/webapp"> -->
+<Context path="/webapp">
+  <Resource auth="Container" driverClassName="com.mysql.cj.jdbc.Driver" maxIdle="30" maxTotal="100" maxWaitMillis="10000" name="jdbc/mysqlDB" password="eFact*1979" type="javax.sql.DataSource" url="jdbc:mysql://localhost:3307/servicioefactura?serverTimezone=America/Montevideo" username="eFactura"/>
+</Context>

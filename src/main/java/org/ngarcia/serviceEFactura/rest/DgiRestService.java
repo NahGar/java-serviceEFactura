@@ -3,7 +3,9 @@ package org.ngarcia.serviceEFactura.rest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import org.ngarcia.serviceEFactura.models.Usuario;
 import org.ngarcia.serviceEFactura.services.DGIService; // Servicio reestructurado
+import org.ngarcia.serviceEFactura.services.UsuarioServiceImpl;
 
 @Path("/dgi")
 @Produces(MediaType.APPLICATION_JSON)
@@ -26,6 +28,23 @@ public class DgiRestService {
                     .entity(new DgiResponse("error", e.getMessage()))
                     .build();
         }
+    }
+
+    @POST
+    @Path("/prueba")
+    public Response prueba() {
+
+        UsuarioServiceImpl service = new UsuarioServiceImpl();
+
+        Usuario usuario = new Usuario();
+        usuario.setNombre("test");
+        usuario.setEmail("saa@232.com");
+
+        Usuario usuario1 = service.crear(usuario);
+
+        return Response.ok()
+                .entity(new DgiResponse("success", usuario1.toString()))
+                .build();
     }
 
     // DTO para entrada
